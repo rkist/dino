@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Chrome against localhost, with sourcemaps",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:8080",
+            "sourceMaps": true,
+            "webRoot": "${workspaceRoot}"
+        },
+        {
+            "name": "Attach to Chrome",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            // "sourceMaps": true,
+            "webRoot": "${workspaceRoot}", 
+            "url": "https://www.google.no/search?q=dino&oq=dino&aqs=chrome..69i57j69i60j0l4.8259j0j9&sourceid=chrome&ie=UTF-8"
+
+        }
+    ]
+}

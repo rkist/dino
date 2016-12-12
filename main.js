@@ -1,28 +1,3 @@
-/**
- * A simple script to automatically play the chrome
- * offline dinosaur game. 
- *
- * Copy this script into the Javascript console in the browser
- * and start the game. The dinosaur should now be alive!
- *
- * This is a simple hack done over an afternoon and far from perfect
- * It can be improved in various ways. Last I checked it reaches
- * a score of around 4k+ pretty consistently. It can definitely
- * be improved much further
- *
- * Currently, the logic is look ahead of the dinosaur for obstacles
- * when an obstacle is detected jump. If the obstacle is a bird
- * then duck. The dinosaur's current state is tracked by the "eye"
- * position. The logic is the dinosaur's eye is in a constant
- * defined position in every state (running, duck). Using this
- * we can reliably detect the current state the dinosaur is in. 
- *
- * Author: Azaan Hassan
- * Email : azaan@outlook.com
- *
- * June - 2016 
- */
-
 var game = (function(document) {
     'use strict';
 
@@ -39,7 +14,7 @@ var game = (function(document) {
         // moves
         mJump: 'M_JUMP',
         mDuck: 'M_DUCK',
-        mSpace: 'M_SPACE',
+        mRestart: 'M_ENTER',
 
         // states
         stateAirbone: 'S_AIRBONE',
@@ -83,15 +58,15 @@ var game = (function(document) {
     // game logic
     var runIntervalId = -1;
     var currentDinoState = C.stateGround;
-    var stateCommanded = false;
-    var oldDinoState = C.stateGround;
     var currentTime = 0;
     var currentLookAheadBuffer;
     var currentBirdLookAheadBuffer;
-    function run() {
+    function run() 
+    {
         var i;
 
-        if (runIntervalId == -1) {
+        if (runIntervalId == -1) 
+        {
             runIntervalId = setInterval(run, C.runIntervalMs);
         }
 
@@ -102,32 +77,40 @@ var game = (function(document) {
 
         var eyePixel = getPixel(imageData, C.dinoEyeX, C.dinoEyeY);
         var eyePixelDuck = getPixel(imageData, C.dinoDuckEyeX, C.dinoDuckEyeY);
-        if (isPixelEqual(eyePixel, C.dinoEyeColor)) {
+
+        if (isPixelEqual(eyePixel, C.dinoEyeColor)) 
+        {
             currentDinoState = C.stateGround;
-        } else if (isPixelEqual(eyePixelDuck, C.dinoEyeColor)) {
+        } 
+        else if (isPixelEqual(eyePixelDuck, C.dinoEyeColor)) 
+        {
             currentDinoState = C.stateDuck;
-        } else {
+        } 
+        else 
+        {
             currentDinoState = C.stateAirbone;
         }
 
         var lookforwardDanger = false;
-        for (i = 0; i < currentLookAheadBuffer; i += 2) {
-            if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) {
+        for (i = 0; i < currentLookAheadBuffer; i += 2) 
+        {
+            if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) 
+            {
                 lookforwardDanger = true;
                 break;
             }
         }
 
-        if (currentDinoState === C.stateGround) {
-            // if dino on ground, scan ahead to see if there are obstacles. If there are
-            // jump
-
-            if (lookforwardDanger && !stateCommanded) {
+        if (currentDinoState === C.stateGround) 
+        {
+            // if dino on ground, scan ahead to see if there are obstacles. If there are jump
+            if (lookforwardDanger)
+            {
                 issueMove(C.mJump);
-                stateCommanded = true;
                 console.log('JUMP!');
-
-            } else {
+            } 
+            else 
+            {
                 // watch for birds in mid level
                 var birdDanger = false;
                 for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) {
@@ -137,47 +120,23 @@ var game = (function(document) {
                     }
                 }
 
-                if (birdDanger) {
+                if (birdDanger) 
+                {
                     issueMove(C.mDuck, 400);
                     console.log('DUCK!');
                 }
             }
-
         }
-        // when in air and the dino crosses the obstacle press down
-        // to goto ground faster. This could be an improvement if tuned
-        // properly. Removed as of now.
-        // else if (currentDinoState === C.stateAirbone) {
-        //     var downClear = true;
-        //     for (i = 0; i < C.lookDownWidth; i++) {
-        //         if (!isPixelEqual(getPixel(imageData, C.lookDownStartX + i, C.lookDownStartY), C.blankPixel)) {
-        //             downClear = false;
-        //         }
-        //     }
-        //
-        //     if (!lookforwardDanger && downClear && !stateCommanded) {
-        //         console.log('DOWN!');
-        //         stateCommanded = true;
-        //         issueMove(C.mDuck);
-        //     }
-        // }
-
-        if (oldDinoState !== currentDinoState) {
-            stateCommanded = false;
-        }
-
-        oldDinoState = currentDinoState;
         currentTime += C.runIntervalMs;
 
-        console.log({
-            currentDinoState: currentDinoState,
+        console.log
+        ({
+//             currentDinoState: currentDinoState,
             lookForwardDanger: lookforwardDanger,
             birdDanger: birdDanger,
-            // downClear: downClear,
-            stateCommanded: stateCommanded,
             currentTime: currentTime,
-            lookAheadBuffer: currentLookAheadBuffer,
-            birdLookAhead: currentBirdLookAheadBuffer,
+//             lookAheadBuffer: currentLookAheadBuffer,
+//             birdLookAhead: currentBirdLookAheadBuffer,
         });
     }
 
@@ -191,25 +150,33 @@ var game = (function(document) {
     function issueMove(move, timeout) {
         switch (move) {
             case C.mJump:
-                if (!timeout) {
+                if (!timeout) 
+                {
                     timeout = 85;
                 }
 
                 issueKeyPress('keydown', 38);
-                setTimeout(function() {
-                    issueKeyPress('keyup', 38);
-                }, timeout);
+                setTimeout(function() { issueKeyPress('keyup', 38);}, timeout);
                 break;
 
             case C.mDuck:
-                if (!timeout) {
+                if (!timeout) 
+                {
                     timeout = 200;
                 }
 
                 issueKeyPress('keydown', 40);
-                setTimeout(function() {
-                    issueKeyPress('keyup', 40);
-                }, timeout);
+                setTimeout(function() {issueKeyPress('keyup', 40);}, timeout);
+                break;
+
+             case C.mRestart:
+                if (!timeout) 
+                {
+                    timeout = 85;
+                }
+
+                issueKeyPress('keydown', 53);
+                setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
                 break;
 
             default:
@@ -262,8 +229,10 @@ var game = (function(document) {
      * @param time current in game time
      * @return number of pixels to look ahead for birds
      */
-    function getLookAheadBufferBird(time) {
-        if (time < 50000) {
+    function getLookAheadBufferBird(time) 
+    {
+        if (time < 50000) 
+        {
             return 50;
         }
 
@@ -274,11 +243,13 @@ var game = (function(document) {
      * Helper which given an event type and a key code
      * dispatches this event
      */
-    function issueKeyPress(type, keycode) {
+    function issueKeyPress(type, keycode) 
+    {
         var eventObj = document.createEventObject ?
             document.createEventObject() : document.createEvent("Events");
 
-        if(eventObj.initEvent){
+        if(eventObj.initEvent)
+        {
             eventObj.initEvent(type, true, true);
         }
 
@@ -295,7 +266,8 @@ var game = (function(document) {
      * at the given point. The x and y values must be 
      * within bounds
      */
-    function getPixel(imgData, x, y) {
+    function getPixel(imgData, x, y) 
+    {
         var dataStart = (x + y * C.width) * 4;
 
         return {
@@ -310,7 +282,8 @@ var game = (function(document) {
      * Given two standard pixel objects check for their
      * equality
      */
-    function isPixelEqual(p1, p2) {
+    function isPixelEqual(p1, p2) 
+    {
         return p1.r === p2.r &&
             p1.g === p2.g &&
             p1.b === p2.b &&
@@ -318,11 +291,10 @@ var game = (function(document) {
     }
 
     // exports
-    return {
-        run: run
-    };
+    return { run: run };
 
 })(document)
 
 
 game.run();
+
