@@ -14,7 +14,6 @@ var game = (function(document) {
         // moves
         mJump: 'M_JUMP',
         mDuck: 'M_DUCK',
-        mRestart: 'M_ENTER',
 
         // states
         stateAirbone: 'S_AIRBONE',
@@ -51,16 +50,13 @@ var game = (function(document) {
         lookDownWidth: 60,
         lookDownStartX: 10,
         lookDownStartY: 131 - 10,
-
-        midBirdLookAhead: 50,
     };
 
     // game logic
     var runIntervalId = -1;
     var currentDinoState = C.stateGround;
     var currentTime = 0;
-    var currentLookAheadBuffer;
-    var currentBirdLookAheadBuffer;
+    var noDangerCounter = 0;
     function run() 
     {
         var i;
@@ -70,8 +66,8 @@ var game = (function(document) {
             runIntervalId = setInterval(run, C.runIntervalMs);
         }
 
-        currentLookAheadBuffer = getLookAheadBuffer(currentTime);
-        currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
+        var currentLookAheadBuffer = getLookAheadBuffer(currentTime);
+        var currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
 
         var imageData = ctx.getImageData(0, 0, C.width, C.height);
 
@@ -101,6 +97,17 @@ var game = (function(document) {
             }
         }
 
+        // watch for birds in mid level
+        var birdDanger = false;
+        for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) 
+        {
+            if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) 
+            {
+                birdDanger = true;
+                break;
+            }
+        }
+
         if (currentDinoState === C.stateGround) 
         {
             // if dino on ground, scan ahead to see if there are obstacles. If there are jump
@@ -108,36 +115,50 @@ var game = (function(document) {
             {
                 issueMove(C.mJump);
                 console.log('JUMP!');
-            } 
-            else 
+                noDangerCounter = 0;
+            }
+            else if (birdDanger) 
             {
-                // watch for birds in mid level
-                var birdDanger = false;
-                for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) {
-                    if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) {
-                        birdDanger = true;
-                        break;
-                    }
-                }
-
-                if (birdDanger) 
-                {
-                    issueMove(C.mDuck, 400);
-                    console.log('DUCK!');
-                }
+                issueMove(C.mDuck, 400);
+                console.log('DUCK!');
+                noDangerCounter = 0;
             }
         }
         currentTime += C.runIntervalMs;
+        noDangerCounter += 1;
 
-        console.log
-        ({
+        if (noDangerCounter > 100)
+        {
+            console.log('Restarting!');
+        }
+
+        if (noDangerCounter > 200)
+        {
+            restart();
+            currentTime = 0;
+            noDangerCounter = 0;
+        }
+
+//         console.log
+//         ({
 //             currentDinoState: currentDinoState,
-            lookForwardDanger: lookforwardDanger,
-            birdDanger: birdDanger,
-            currentTime: currentTime,
+//             lookForwardDanger: lookforwardDanger,
+//             birdDanger: birdDanger,
+//             currentTime: currentTime,
 //             lookAheadBuffer: currentLookAheadBuffer,
 //             birdLookAhead: currentBirdLookAheadBuffer,
-        });
+//         });
+    }
+
+    function restart() 
+    {
+       var timeout = 200;
+
+        issueKeyPress('keydown', 53);
+        setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
+
+        issueKeyPress('keydown', 38);
+        setTimeout(function() {issueKeyPress('keyup', 38);}, timeout);
     }
 
     /**
@@ -147,8 +168,10 @@ var game = (function(document) {
      * @param move the state to move to from Constants
      * @param timeout optional value for how long to keep the button pressed
      */
-    function issueMove(move, timeout) {
-        switch (move) {
+    function issueMove(move, timeout) 
+    {
+        switch (move) 
+        {
             case C.mJump:
                 if (!timeout) 
                 {
@@ -169,16 +192,6 @@ var game = (function(document) {
                 setTimeout(function() {issueKeyPress('keyup', 40);}, timeout);
                 break;
 
-             case C.mRestart:
-                if (!timeout) 
-                {
-                    timeout = 85;
-                }
-
-                issueKeyPress('keydown', 53);
-                setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
-                break;
-
             default:
                 console.log('Invalid move ' + move);
         }
@@ -193,29 +206,38 @@ var game = (function(document) {
      * @param time the current in game time
      * @return number of look ahead pixels
      */
-    function getLookAheadBuffer(time) {
-        if (time < 40000) {
+    function getLookAheadBuffer(time) 
+    {
+        if (time < 40000) 
+        {
             return 62;
-
-        } else if (time < 60000) {
+        } 
+        else if (time < 60000)
+        {
             return 92;
-
-        } else if (time < 70000) {
+        } 
+        else if (time < 70000) 
+        {
             return 110;
-
-        } else if (time < 85000) {
+        } 
+        else if (time < 85000) 
+        {
             return 120;
-
-        } else if (time < 100000) {
+        } 
+        else if (time < 100000) 
+        {
             return 135;
-
-        } else if (time < 115000) {
+        } 
+        else if (time < 115000) 
+        {
             return 150;
-
-        } else if (time < 140000) {
+        } 
+        else if (time < 140000) 
+        {
             return 180;
-
-        } else if (time < 170000) {
+        } 
+        else if (time < 170000) 
+        {
             return 190;
         }
 
