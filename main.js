@@ -83,23 +83,23 @@ var game = (function(document) {
             currentDinoState = C.stateAirbone;
         }
 
-        var lookforwardDanger = false;
+        var lowDanger = false;
         for (i = 0; i < currentLookAheadBuffer; i += 2) 
         {
             if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) 
             {
-                lookforwardDanger = true;
+                lowDanger = true;
                 break;
             }
         }
 
         // watch for birds in mid level
-        var birdDanger = false;
+        var highDanger = false;
         for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) 
         {
             if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) 
             {
-                birdDanger = true;
+                highDanger = true;
                 break;
             }
         }
@@ -107,13 +107,13 @@ var game = (function(document) {
         if (currentDinoState === C.stateGround) 
         {
             // if dino on ground, scan ahead to see if there are obstacles. If there are jump
-            if (lookforwardDanger)
+            if (lowDanger)
             {
                 issueMove(C.mJump);
                 console.log('JUMP!');
                 noDangerCounter = 0;
             }
-            else if (birdDanger) 
+            else if (highDanger) 
             {
                 issueMove(C.mDuck, 400);
                 console.log('DUCK!');
@@ -138,8 +138,8 @@ var game = (function(document) {
 //         console.log
 //         ({
 //             currentDinoState: currentDinoState,
-//             lookForwardDanger: lookforwardDanger,
-//             birdDanger: birdDanger,
+//             lowDanger: lowDanger,
+//             highDanger: highDanger,
 //             currentTime: currentTime,
 //             lookAheadBuffer: currentLookAheadBuffer,
 //             birdLookAhead: currentBirdLookAheadBuffer,
