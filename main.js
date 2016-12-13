@@ -46,10 +46,6 @@ var game = (function(document) {
         // look ahead configurations
         lookAheadX: 70 + 5,
         lookAheadY: 131 - 10,
-
-        lookDownWidth: 60,
-        lookDownStartX: 10,
-        lookDownStartY: 131 - 10,
     };
 
     // game logic
@@ -317,6 +313,4 @@ var game = (function(document) {
 
 })(document)
 
-
 game.run();
-
