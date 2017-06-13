@@ -2,6 +2,10 @@ const mJump = 'M_JUMP';
 const mDuck = 'M_DUCK';
 const mRun = 'M_RUN';
 
+//TODO: separar Game e Player
+//TODO: estabelecer uma relacao entre movimentos e acoes melhor do que esses const
+//TODO: interfacear com outros players
+
 function Control()
 {
 	function Move(move) 
