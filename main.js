@@ -9,18 +9,18 @@ const mRun = 'M_RUN';
 function Control()
 {
 	function Move(move) 
-    {
-    	var timeout = 90;
+    {    	
         switch (move) 
         {
-            case mJump:           	
-                issueKeyPress(38, timeout)
+            case mJump:      
+				var timeout = 90;			
+                PressKey(38, timeout)
                 console.log('Jump!');
                 break;
 
             case mDuck:            	
                 timeout = 400;
-                issueKeyPress(40, timeout)
+                PressKey(40, timeout)
                 console.log('Duck!');
                 break;
             case mRun:
