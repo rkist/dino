@@ -36,18 +36,19 @@ var game = (function(document) {
     };
 
     // game logic
-    var runIntervalId = -1;
     var currentTime = 0;
     var noDangerCounter = 0;
-    function run() 
+	
+	function Start()
+	{
+		console.log('Start!');
+		return setInterval(Run, C.runIntervalMs);
+	}
+	
+    function Run() 
     {
-        if (runIntervalId == -1) 
-        {
-        	console.log('Start!');
-            runIntervalId = setInterval(run, C.runIntervalMs);
-        }
-
-        var action = decideAction();
+    	var imageData = ctx.getImageData(0, 0, C.width, C.height);
+        var action = decideAction(imageData, currentTime);
         
         issueMove(action);
         
@@ -66,19 +67,29 @@ var game = (function(document) {
 
         if (noDangerCounter > 250)
         {
+        	console.log(currentTime)
 			console.log('Restart!');
-            restart();
+            Restart();
             currentTime = 0;
             noDangerCounter = 0;
         }
     }
 
-    function decideAction()
+    function Restart() 
     {
-        var currentLookAheadBuffer = getLookAheadBuffer(currentTime);
-        var currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
+       var timeout = 200;
 
-        var imageData = ctx.getImageData(0, 0, C.width, C.height);
+        issueKeyPress('keydown', 53);
+        setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
+
+        issueKeyPress('keydown', 38);
+        setTimeout(function() {issueKeyPress('keyup', 38);}, timeout);
+    }
+
+    function decideAction(imageData, elapsedTime)
+    {
+        var currentLookAheadBuffer = getLookAheadBuffer(elapsedTime);
+        var currentBirdLookAheadBuffer = getLookAheadBufferBird(elapsedTime);        
 
         var i;
 
@@ -102,46 +113,19 @@ var game = (function(document) {
 		return C.mRun;
     }
 
-    function restart() 
-    {
-       var timeout = 200;
-
-        issueKeyPress('keydown', 53);
-        setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
-
-        issueKeyPress('keydown', 38);
-        setTimeout(function() {issueKeyPress('keyup', 38);}, timeout);
-    }
-
-    /**
-     * Given a move and an optional timeout, execute the
-     * move by issuing required keystrokes
-     *
-     * @param move the state to move to from Constants
-     * @param timeout optional value for how long to keep the button pressed
-     */
     function issueMove(move) 
     {
-    	var timeout = 50;
+    	var timeout = 90;
         switch (move) 
         {
             case C.mJump:           	
-                if (!timeout) 
-                {
-                    timeout = 85;
-                }
-
                 issueKeyPress('keydown', 38);
                 setTimeout(function() { issueKeyPress('keyup', 38);}, timeout);
                 console.log('JUMP!');
                 break;
 
             case C.mDuck:            	
-                if (!timeout) 
-                {
-                    timeout = 400;
-                }
-
+                timeout = 400;
                 issueKeyPress('keydown', 40);
                 setTimeout(function() {issueKeyPress('keyup', 40);}, timeout);
                 console.log('DUCK!');
@@ -154,24 +138,15 @@ var game = (function(document) {
         }
     }
 
-    /**
-     * Given the current time return the distance to look
-     * ahead for. This changes with time as the dino goes
-     * faster it helps to look further. As you've to jump
-     * earlier to cross obstacles.
-     *
-     * @param time the current in game time
-     * @return number of look ahead pixels
-     */
     function getLookAheadBuffer(time) 
     {
         if (time < 40000) 
         {
-            return 60;
+            return 52;
         } 
         else if (time < 60000)
         {
-            return 90;
+            return 84;
         } 
         else if (time < 70000) 
         {
@@ -201,13 +176,6 @@ var game = (function(document) {
         return 190;
     }
 
-    /**
-     * Given the current game time return the look ahead
-     * pixels for birds
-     * 
-     * @param time current in game time
-     * @return number of pixels to look ahead for birds
-     */
     function getLookAheadBufferBird(time) 
     {
         if (time < 50000) 
@@ -218,10 +186,6 @@ var game = (function(document) {
         return 70;
     }
 
-    /**
-     * Helper which given an event type and a key code
-     * dispatches this event
-     */
     function issueKeyPress(type, keycode) 
     {
         var eventObj = document.createEventObject ?
@@ -239,12 +203,6 @@ var game = (function(document) {
 
     }
 
-    /**
-     * Given an image data array from a canvas and an x and y
-     * position, return an object representing the pixel 
-     * at the given point. The x and y values must be 
-     * within bounds
-     */
     function getPixel(imgData, x, y) 
     {
         var dataStart = (x + y * C.width) * 4;
@@ -257,10 +215,6 @@ var game = (function(document) {
         };
     }
 
-    /**
-     * Given two standard pixel objects check for their
-     * equality
-     */
     function isPixelEqual(p1, p2) 
     {
         return p1.r === p2.r &&
@@ -270,8 +224,8 @@ var game = (function(document) {
     }
 
     // exports
-    return { run: run };
+    return { Start: Start };
 
 })(document)
 
-game.run();
+game.Start();
