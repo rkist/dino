@@ -1,19 +1,70 @@
-var game = (function(document) {
+const mJump = 'M_JUMP';
+const mDuck = 'M_DUCK';
+const mRun = 'M_RUN';
+
+function Control()
+{
+	function Move(move) 
+    {
+    	var timeout = 90;
+        switch (move) 
+        {
+            case mJump:           	
+                issueKeyPress(38, timeout)
+                console.log('Jump!');
+                break;
+
+            case mDuck:            	
+                timeout = 400;
+                issueKeyPress(40, timeout)
+                console.log('Duck!');
+                break;
+            case mRun:
+            	break;
+
+            default:
+                console.log('Invalid move ' + move);
+        }
+    }
+	
+	function PressKey(key, timeout) 
+    {
+		keyPress('keydown', key);
+		setTimeout(function() {keyPress('keyup', key);}, timeout);
+    }
+	
+	function keyPress(type, keycode) 
+    {
+        var eventObj = document.createEventObject ?
+            document.createEventObject() : document.createEvent("Events");
+
+        if(eventObj.initEvent)
+        {
+            eventObj.initEvent(type, true, true);
+        }
+
+        eventObj.keyCode = keycode;
+        eventObj.which = keycode;
+
+        document.dispatchEvent ? document.dispatchEvent(eventObj) : el.fireEvent("onkeydown", eventObj);
+    }
+	
+	// exports
+    return { Move: Move, PressKey : PressKey };
+}
+
+function Player(document, control) 
+{
     'use strict';
 
     var canvas = document.getElementsByClassName('runner-canvas')[0];
-    var ctx = canvas.getContext('2d');
-
+    var ctx = canvas.getContext('2d');	
+	
     // constants
     var C = {
         // pixels
         blankPixel: {r: 0, g: 0, b: 0, a: 0},
         blackPixel: {r: 83, g: 83, b: 83, a: 255},
-
-        // moves
-        mJump: 'M_JUMP',
-        mDuck: 'M_DUCK',
-        mRun:  'M_RUN',
 
         // dimensions
         width: canvas.width,
@@ -50,9 +101,9 @@ var game = (function(document) {
     	var imageData = ctx.getImageData(0, 0, C.width, C.height);
         var action = decideAction(imageData, currentTime);
         
-        issueMove(action);
+        control.Move(action);
         
-        if (action == C.mRun)
+        if (action == mRun)
 		{
 
 		}
@@ -77,13 +128,10 @@ var game = (function(document) {
 
     function Restart() 
     {
-       var timeout = 200;
+		var timeout = 200;
 
-        issueKeyPress('keydown', 53);
-        setTimeout(function() {issueKeyPress('keyup', 53);}, timeout);
-
-        issueKeyPress('keydown', 38);
-        setTimeout(function() {issueKeyPress('keyup', 38);}, timeout);
+		control.PressKey(53, timeout);
+		control.PressKey(38, timeout);
     }
 
     function decideAction(imageData, elapsedTime)
@@ -97,7 +145,7 @@ var game = (function(document) {
         {
             if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) 
             {
-                return C.mJump;
+                return mJump;
             }
         }
 
@@ -106,36 +154,11 @@ var game = (function(document) {
         {
             if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) 
             {
-                return C.mDuck;
+                return mDuck;
             }
         }
 
-		return C.mRun;
-    }
-
-    function issueMove(move) 
-    {
-    	var timeout = 90;
-        switch (move) 
-        {
-            case C.mJump:           	
-                issueKeyPress('keydown', 38);
-                setTimeout(function() { issueKeyPress('keyup', 38);}, timeout);
-                console.log('JUMP!');
-                break;
-
-            case C.mDuck:            	
-                timeout = 400;
-                issueKeyPress('keydown', 40);
-                setTimeout(function() {issueKeyPress('keyup', 40);}, timeout);
-                console.log('DUCK!');
-                break;
-            case C.mRun:
-            	break;
-
-            default:
-                console.log('Invalid move ' + move);
-        }
+		return mRun;
     }
 
     function getLookAheadBuffer(time) 
@@ -186,23 +209,6 @@ var game = (function(document) {
         return 70;
     }
 
-    function issueKeyPress(type, keycode) 
-    {
-        var eventObj = document.createEventObject ?
-            document.createEventObject() : document.createEvent("Events");
-
-        if(eventObj.initEvent)
-        {
-            eventObj.initEvent(type, true, true);
-        }
-
-        eventObj.keyCode = keycode;
-        eventObj.which = keycode;
-
-        document.dispatchEvent ? document.dispatchEvent(eventObj) : el.fireEvent("onkeydown", eventObj);
-
-    }
-
     function getPixel(imgData, x, y) 
     {
         var dataStart = (x + y * C.width) * 4;
@@ -225,7 +231,8 @@ var game = (function(document) {
 
     // exports
     return { Start: Start };
+}
 
-})(document)
-
-game.Start();
+var control = Control();
+var player = Player(document, control);
+player.Start();
