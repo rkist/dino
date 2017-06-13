@@ -43,10 +43,13 @@ var game = (function(document) {
     {
         if (runIntervalId == -1) 
         {
+        	console.log('Start!');
             runIntervalId = setInterval(run, C.runIntervalMs);
         }
 
         var action = decideAction();
+        
+        issueMove(action);
         
         if (action == C.mRun)
 		{
@@ -54,14 +57,6 @@ var game = (function(document) {
 		}
 		else
 		{
-			if (action == C.mJump)
-			{
-				issueMove(action);				
-			}
-			else if (action == C.mDuck) 
-			{
-				issueMove(action, 400);				
-			}
 			noDangerCounter = 0;
 		}
 		
@@ -125,12 +120,12 @@ var game = (function(document) {
      * @param move the state to move to from Constants
      * @param timeout optional value for how long to keep the button pressed
      */
-    function issueMove(move, timeout) 
+    function issueMove(move) 
     {
+    	var timeout = 50;
         switch (move) 
         {
-            case C.mJump:
-            	console.log('JUMP!');
+            case C.mJump:           	
                 if (!timeout) 
                 {
                     timeout = 85;
@@ -138,18 +133,21 @@ var game = (function(document) {
 
                 issueKeyPress('keydown', 38);
                 setTimeout(function() { issueKeyPress('keyup', 38);}, timeout);
+                console.log('JUMP!');
                 break;
 
-            case C.mDuck:
-            	console.log('DUCK!');
+            case C.mDuck:            	
                 if (!timeout) 
                 {
-                    timeout = 200;
+                    timeout = 400;
                 }
 
                 issueKeyPress('keydown', 40);
                 setTimeout(function() {issueKeyPress('keyup', 40);}, timeout);
+                console.log('DUCK!');
                 break;
+            case C.mRun:
+            	break;
 
             default:
                 console.log('Invalid move ' + move);
@@ -169,11 +167,11 @@ var game = (function(document) {
     {
         if (time < 40000) 
         {
-            return 62;
+            return 60;
         } 
         else if (time < 60000)
         {
-            return 92;
+            return 90;
         } 
         else if (time < 70000) 
         {
