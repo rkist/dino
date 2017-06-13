@@ -13,6 +13,7 @@ var game = (function(document) {
         // moves
         mJump: 'M_JUMP',
         mDuck: 'M_DUCK',
+        mRun:  'M_RUN',
 
         // dimensions
         width: canvas.width,
@@ -40,71 +41,70 @@ var game = (function(document) {
     var noDangerCounter = 0;
     function run() 
     {
-        var i;
-
         if (runIntervalId == -1) 
         {
             runIntervalId = setInterval(run, C.runIntervalMs);
         }
 
-        var currentLookAheadBuffer = getLookAheadBuffer(currentTime);
-        var currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
-
-        var imageData = ctx.getImageData(0, 0, C.width, C.height);
-
-        var lowDanger = false;
-        for (i = 0; i < currentLookAheadBuffer; i += 2) 
-        {
-            if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) 
-            {
-                lowDanger = true;
-                break;
-            }
-        }
-
-        // watch for birds in mid level
-        var highDanger = false;
-        for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) 
-        {
-            if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) 
-            {
-                highDanger = true;
-                break;
-            }
-        }
-
-		if (lowDanger)
+        var action = decideAction();
+        
+        if (action == C.mRun)
 		{
-			issueMove(C.mJump);
-			console.log('JUMP!');
+
+		}
+		else
+		{
+			if (action == C.mJump)
+			{
+				issueMove(action);				
+			}
+			else if (action == C.mDuck) 
+			{
+				issueMove(action, 400);				
+			}
 			noDangerCounter = 0;
 		}
-		else if (highDanger) 
-		{
-			issueMove(C.mDuck, 400);
-			console.log('DUCK!');
-			noDangerCounter = 0;
-		}
+		
 			
         currentTime += C.runIntervalMs;
         noDangerCounter += 1;
 
         if (noDangerCounter > 250)
         {
-			console.log('Restarting!');
+			console.log('Restart!');
             restart();
             currentTime = 0;
             noDangerCounter = 0;
         }
+    }
 
-//         console.log
-//         ({
-//             lowDanger: lowDanger,
-//             highDanger: highDanger,
-//             currentTime: currentTime,
-//             lookAheadBuffer: currentLookAheadBuffer,
-//             birdLookAhead: currentBirdLookAheadBuffer,
-//         });
+    function decideAction()
+    {
+        var currentLookAheadBuffer = getLookAheadBuffer(currentTime);
+        var currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
+
+        var imageData = ctx.getImageData(0, 0, C.width, C.height);
+
+        var i;
+
+        for (i = 0; i < currentLookAheadBuffer; i += 2) 
+        {
+            if (isPixelEqual(getPixel(imageData, C.lookAheadX + i, C.lookAheadY), C.blackPixel)) 
+            {
+                return C.mJump;
+            }
+        }
+
+        // watch for birds in mid level
+        for (i = C.midBirdX; i < C.midBirdX + currentBirdLookAheadBuffer; i += 2) 
+        {
+            if (isPixelEqual(getPixel(imageData, i, C.midBirdY), C.blackPixel)) 
+            {
+                return C.mDuck;
+            }
+        }
+
+		return C.mRun;
     }
 
     function restart() 
@@ -130,6 +130,7 @@ var game = (function(document) {
         switch (move) 
         {
             case C.mJump:
+            	console.log('JUMP!');
                 if (!timeout) 
                 {
                     timeout = 85;
@@ -140,6 +141,7 @@ var game = (function(document) {
                 break;
 
             case C.mDuck:
+            	console.log('DUCK!');
                 if (!timeout) 
                 {
                     timeout = 200;
