@@ -9,16 +9,10 @@ var game = (function(document) {
         // pixels
         blankPixel: {r: 0, g: 0, b: 0, a: 0},
         blackPixel: {r: 83, g: 83, b: 83, a: 255},
-        dinoEyeColor: {r: 255, g: 255, b: 255, a: 255},
 
         // moves
         mJump: 'M_JUMP',
         mDuck: 'M_DUCK',
-
-        // states
-        stateAirbone: 'S_AIRBONE',
-        stateGround: 'S_GROUND',
-        stateDuck: 'S_DUCK',
 
         // dimensions
         width: canvas.width,
@@ -28,20 +22,12 @@ var game = (function(document) {
         groundY: 131,
         dinoEndX: 70,
 
-        // position of dino eye in running state
-        dinoEyeX: 51,
-        dinoEyeY: 98,
-
-        // position of dino eye in duck state
-        dinoDuckEyeX: 68,
-        dinoDuckEyeY: 116,
-
         // position to look for birds in
         midBirdX: 75 + 5,
         midBirdY: 98 - 10,
 
         // interval between bot function runs
-        runIntervalMs: 50,
+        runIntervalMs: 30,
 
         // look ahead configurations
         lookAheadX: 70 + 5,
@@ -50,7 +36,6 @@ var game = (function(document) {
 
     // game logic
     var runIntervalId = -1;
-    var currentDinoState = C.stateGround;
     var currentTime = 0;
     var noDangerCounter = 0;
     function run() 
@@ -66,22 +51,6 @@ var game = (function(document) {
         var currentBirdLookAheadBuffer = getLookAheadBufferBird(currentTime);
 
         var imageData = ctx.getImageData(0, 0, C.width, C.height);
-
-        var eyePixel = getPixel(imageData, C.dinoEyeX, C.dinoEyeY);
-        var eyePixelDuck = getPixel(imageData, C.dinoDuckEyeX, C.dinoDuckEyeY);
-
-        if (isPixelEqual(eyePixel, C.dinoEyeColor)) 
-        {
-            currentDinoState = C.stateGround;
-        } 
-        else if (isPixelEqual(eyePixelDuck, C.dinoEyeColor)) 
-        {
-            currentDinoState = C.stateDuck;
-        } 
-        else 
-        {
-            currentDinoState = C.stateAirbone;
-        }
 
         var lowDanger = false;
         for (i = 0; i < currentLookAheadBuffer; i += 2) 
@@ -104,32 +73,25 @@ var game = (function(document) {
             }
         }
 
-        if (currentDinoState === C.stateGround) 
-        {
-            // if dino on ground, scan ahead to see if there are obstacles. If there are jump
-            if (lowDanger)
-            {
-                issueMove(C.mJump);
-                console.log('JUMP!');
-                noDangerCounter = 0;
-            }
-            else if (highDanger) 
-            {
-                issueMove(C.mDuck, 400);
-                console.log('DUCK!');
-                noDangerCounter = 0;
-            }
-        }
+		if (lowDanger)
+		{
+			issueMove(C.mJump);
+			console.log('JUMP!');
+			noDangerCounter = 0;
+		}
+		else if (highDanger) 
+		{
+			issueMove(C.mDuck, 400);
+			console.log('DUCK!');
+			noDangerCounter = 0;
+		}
+			
         currentTime += C.runIntervalMs;
         noDangerCounter += 1;
 
-        if (noDangerCounter > 100)
+        if (noDangerCounter > 250)
         {
-            console.log('Restarting!');
-        }
-
-        if (noDangerCounter > 200)
-        {
+			console.log('Restarting!');
             restart();
             currentTime = 0;
             noDangerCounter = 0;
@@ -137,7 +99,6 @@ var game = (function(document) {
 
 //         console.log
 //         ({
-//             currentDinoState: currentDinoState,
 //             lowDanger: lowDanger,
 //             highDanger: highDanger,
 //             currentTime: currentTime,
